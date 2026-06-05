@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import HabitCard from "../components/HabitCard";
+import HabitForm from "../components/HabitForm";
+import ProgressCard from "../components/ProgressCard";
+import EmptyState from "../components/EmptyState";
 import { dummyHabits } from "../data/dummyHabits";
 import { getTodayDate } from "../utils/date";
 import { calculateCurrentStreak } from "../utils/streak";
@@ -146,8 +149,14 @@ function Dashboard() {
         </div>
 
         {isFormOpen && (
-          <form
+          <HabitForm
+            isEditing={Boolean(editingHabitId)}
+            habitName={habitName}
+            habitCategory={habitCategory}
+            onNameChange={setHabitName}
+            onCategoryChange={setHabitCategory}
             onSubmit={handleSubmitHabit}
+            onCancel={resetForm}
             className="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm"
           >
             <h2 className="text-xl font-semibold text-gray-950">
@@ -200,11 +209,16 @@ function Dashboard() {
                 {editingHabitId ? "Save Changes" : "Save Habit"}
               </button>
             </div>
-          </form>
+          </HabitForm>
         )}
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_2fr]">
-          <div className="rounded-3xl bg-gray-950 p-6 text-white shadow-sm">
+          <ProgressCard
+            progress={progress}
+            completedHabits={completedHabits}
+            totalHabits={totalHabits}
+          />
+          <div>
             <p className="text-sm text-gray-300">Daily completion</p>
 
             <h2 className="mt-4 text-6xl font-bold">{progress}%</h2>
@@ -227,15 +241,7 @@ function Dashboard() {
             </h2>
 
             {habits.length === 0 ? (
-              <div className="mt-4 rounded-3xl border border-dashed border-gray-300 bg-white p-8 text-center">
-                <h3 className="text-lg font-semibold text-gray-950">
-                  No habits yet.
-                </h3>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  Add your first habit to start tracking your daily progress.
-                </p>
-              </div>
+              <EmptyState onAddHabit={handleOpenAddForm} />
             ) : (
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 {habits.map((habit) => (
