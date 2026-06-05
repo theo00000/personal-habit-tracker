@@ -11,7 +11,7 @@ export const dummyHabits = [
     id: 2,
     name: "Drink 2L water",
     category: "Health",
-    completions: [getDateDaysAgo(1)],
+    completions: [getDateDaysAgo(1), getTodayDate()],
   },
   {
     id: 3,

@@ -34,8 +34,21 @@ function Dashboard() {
   ).length;
 
   const totalHabits = habits.length;
+
   const progress =
     totalHabits === 0 ? 0 : Math.round((completedHabits / totalHabits) * 100);
+
+  const resetForm = () => {
+    setHabitName("");
+    setHabitCategory("");
+    setEditingHabitId(null);
+    setIsFormOpen(false);
+  };
+
+  const handleOpenAddForm = () => {
+    resetForm();
+    setIsFormOpen(true);
+  };
 
   const handleToggleHabit = (habitId) => {
     const updatedHabits = habits.map((habit) => {
@@ -57,16 +70,9 @@ function Dashboard() {
     setHabits(updatedHabits);
   };
 
-  const resetForm = () => {
-    setHabitName("");
-    setHabitCategory("");
-    setEditingHabitId(null);
-    setIsFormOpen(false);
-  };
-
-  const handleOpenAddForm = () => {
-    resetForm();
-    setIsFormOpen(true);
+  const handleDeleteHabit = (habitId) => {
+    const updatedHabits = habits.filter((habit) => habit.id !== habitId);
+    setHabits(updatedHabits);
   };
 
   const handleEditHabit = (habit) => {
@@ -74,11 +80,6 @@ function Dashboard() {
     setHabitCategory(habit.category);
     setEditingHabitId(habit.id);
     setIsFormOpen(true);
-  };
-
-  const handleDeleteHabit = (habitId) => {
-    const updatedHabits = habits.filter((habit) => habit.id !== habitId);
-    setHabits(updatedHabits);
   };
 
   const handleSubmitHabit = (event) => {
