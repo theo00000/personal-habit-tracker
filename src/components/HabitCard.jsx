@@ -5,9 +5,17 @@ function HabitCard({ habit, onToggle, onDelete, onEdit }) {
     <div className="rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-sm font-medium text-gray-500">{habit.category}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+              {habit.time || "09:00"}
+            </span>
 
-          <h3 className="mt-2 text-xl font-semibold text-gray-950">
+            <p className="text-sm font-medium text-gray-500">
+              {habit.category}
+            </p>
+          </div>
+
+          <h3 className="mt-3 text-xl font-semibold text-gray-950">
             {habit.name}
           </h3>
 

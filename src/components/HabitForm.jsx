@@ -2,8 +2,10 @@ function HabitForm({
   isEditing,
   habitName,
   habitCategory,
+  habitTime,
   onNameChange,
   onCategoryChange,
+  onTimeChange,
   onSubmit,
   onCancel,
 }) {
@@ -16,7 +18,7 @@ function HabitForm({
         {isEditing ? "Edit Habit" : "Add New Habit"}
       </h2>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid gap-4 md:grid-cols-3">
         <div>
           <label
             htmlFor="habit-name"
@@ -32,6 +34,7 @@ function HabitForm({
             onChange={(event) => onNameChange(event.target.value)}
             placeholder="Example: Read 10 pages"
             className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-gray-950"
+            required
           />
         </div>
 
@@ -50,6 +53,25 @@ function HabitForm({
             onChange={(event) => onCategoryChange(event.target.value)}
             placeholder="Example: Learning"
             className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-gray-950"
+            required
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="habit-time"
+            className="text-sm font-medium text-gray-600"
+          >
+            Time
+          </label>
+
+          <input
+            id="habit-time"
+            type="time"
+            value={habitTime}
+            onChange={(event) => onTimeChange(event.target.value)}
+            className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-gray-950"
+            required
           />
         </div>
       </div>

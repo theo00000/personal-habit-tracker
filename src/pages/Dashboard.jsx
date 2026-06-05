@@ -1,39 +1,64 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+
 import HabitCard from "../components/HabitCard";
 import HabitForm from "../components/HabitForm";
 import ProgressCard from "../components/ProgressCard";
 import EmptyState from "../components/EmptyState";
-import { dummyHabits } from "../data/dummyHabits";
+
 import { getTodayDate } from "../utils/date";
 import { calculateCurrentStreak } from "../utils/streak";
-
-const STORAGE_KEY = "personal-habit-tracker-habits";
+import {
+  getHabits,
+  createHabit,
+  updateHabit,
+  deleteHabit,
+  toggleHabit,
+} from "../services/habitApi";
 
 function Dashboard() {
-  const [habits, setHabits] = useState(() => {
-    const savedHabits = localStorage.getItem(STORAGE_KEY);
-
-    if (savedHabits) {
-      return JSON.parse(savedHabits);
-    }
-
-    return dummyHabits;
-  });
+  const [habits, setHabits] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [habitName, setHabitName] = useState("");
   const [habitCategory, setHabitCategory] = useState("");
+  const [habitTime, setHabitTime] = useState("09:00");
   const [editingHabitId, setEditingHabitId] = useState(null);
 
   const today = getTodayDate();
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
-  }, [habits]);
+    let isMounted = true;
+
+    const loadHabits = async () => {
+      try {
+        const data = await getHabits();
+
+        if (isMounted) {
+          setHabits(data);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setErrorMessage(error.message);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadHabits();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const completedHabits = habits.filter((habit) =>
-    habit.completions?.includes(today),
+    (habit.completions || []).includes(today),
   ).length;
 
   const totalHabits = habits.length;
@@ -41,9 +66,17 @@ function Dashboard() {
   const progress =
     totalHabits === 0 ? 0 : Math.round((completedHabits / totalHabits) * 100);
 
+  const sortedHabits = [...habits].sort((a, b) => {
+    const timeA = a.time || "09:00";
+    const timeB = b.time || "09:00";
+
+    return timeA.localeCompare(timeB);
+  });
+
   const resetForm = () => {
     setHabitName("");
     setHabitCategory("");
+    setHabitTime("09:00");
     setEditingHabitId(null);
     setIsFormOpen(false);
   };
@@ -53,72 +86,88 @@ function Dashboard() {
     setIsFormOpen(true);
   };
 
-  const handleToggleHabit = (habitId) => {
-    const updatedHabits = habits.map((habit) => {
-      if (habit.id === habitId) {
-        const completions = habit.completions || [];
-        const isCompletedToday = completions.includes(today);
+  const handleToggleHabit = async (habitId) => {
+    try {
+      setErrorMessage("");
 
-        return {
-          ...habit,
-          completions: isCompletedToday
-            ? completions.filter((date) => date !== today)
-            : [...completions, today],
-        };
-      }
+      const updatedHabit = await toggleHabit(habitId, today);
 
-      return habit;
-    });
-
-    setHabits(updatedHabits);
-  };
-
-  const handleDeleteHabit = (habitId) => {
-    const updatedHabits = habits.filter((habit) => habit.id !== habitId);
-    setHabits(updatedHabits);
-  };
-
-  const handleEditHabit = (habit) => {
-    setHabitName(habit.name);
-    setHabitCategory(habit.category);
-    setEditingHabitId(habit.id);
-    setIsFormOpen(true);
-  };
-
-  const handleSubmitHabit = (event) => {
-    event.preventDefault();
-
-    if (!habitName.trim() || !habitCategory.trim()) {
-      return;
-    }
-
-    if (editingHabitId) {
       const updatedHabits = habits.map((habit) => {
-        if (habit.id === editingHabitId) {
-          return {
-            ...habit,
-            name: habitName,
-            category: habitCategory,
-          };
+        if (habit.id === habitId) {
+          return updatedHabit;
         }
 
         return habit;
       });
 
       setHabits(updatedHabits);
-      resetForm();
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
+  };
+
+  const handleDeleteHabit = async (habitId) => {
+    try {
+      setErrorMessage("");
+
+      await deleteHabit(habitId);
+
+      const updatedHabits = habits.filter((habit) => habit.id !== habitId);
+      setHabits(updatedHabits);
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
+  };
+
+  const handleEditHabit = (habit) => {
+    setHabitName(habit.name);
+    setHabitCategory(habit.category);
+    setHabitTime(habit.time || "09:00");
+    setEditingHabitId(habit.id);
+    setIsFormOpen(true);
+  };
+
+  const handleSubmitHabit = async (event) => {
+    event.preventDefault();
+
+    if (!habitName.trim() || !habitCategory.trim() || !habitTime.trim()) {
       return;
     }
 
-    const newHabit = {
-      id: Date.now(),
-      name: habitName,
-      category: habitCategory,
-      completions: [],
-    };
+    try {
+      setErrorMessage("");
 
-    setHabits([newHabit, ...habits]);
-    resetForm();
+      if (editingHabitId !== null) {
+        const updatedHabit = await updateHabit(editingHabitId, {
+          name: habitName,
+          category: habitCategory,
+          time: habitTime,
+        });
+
+        const updatedHabits = habits.map((habit) => {
+          if (habit.id === editingHabitId) {
+            return updatedHabit;
+          }
+
+          return habit;
+        });
+
+        setHabits(updatedHabits);
+        resetForm();
+        return;
+      }
+
+      const newHabit = await createHabit({
+        name: habitName,
+        category: habitCategory,
+        time: habitTime,
+      });
+
+      setHabits([newHabit, ...habits]);
+      resetForm();
+    } catch (error) {
+      setErrorMessage(error.message);
+    }
   };
 
   return (
@@ -148,68 +197,24 @@ function Dashboard() {
           </button>
         </div>
 
+        {errorMessage && (
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-600">
+            {errorMessage}
+          </div>
+        )}
+
         {isFormOpen && (
           <HabitForm
-            isEditing={Boolean(editingHabitId)}
+            isEditing={editingHabitId !== null}
             habitName={habitName}
             habitCategory={habitCategory}
+            habitTime={habitTime}
             onNameChange={setHabitName}
             onCategoryChange={setHabitCategory}
+            onTimeChange={setHabitTime}
             onSubmit={handleSubmitHabit}
             onCancel={resetForm}
-            className="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm"
-          >
-            <h2 className="text-xl font-semibold text-gray-950">
-              {editingHabitId ? "Edit Habit" : "Add New Habit"}
-            </h2>
-
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Habit Name
-                </label>
-
-                <input
-                  type="text"
-                  value={habitName}
-                  onChange={(event) => setHabitName(event.target.value)}
-                  placeholder="Example: Read 10 pages"
-                  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-gray-950"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-gray-600">
-                  Category
-                </label>
-
-                <input
-                  type="text"
-                  value={habitCategory}
-                  onChange={(event) => setHabitCategory(event.target.value)}
-                  placeholder="Example: Learning"
-                  className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-gray-950"
-                />
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-full border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-100"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                className="rounded-full bg-gray-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
-              >
-                {editingHabitId ? "Save Changes" : "Save Habit"}
-              </button>
-            </div>
-          </HabitForm>
+          />
         )}
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_2fr]">
@@ -218,38 +223,26 @@ function Dashboard() {
             completedHabits={completedHabits}
             totalHabits={totalHabits}
           />
-          <div>
-            <p className="text-sm text-gray-300">Daily completion</p>
-
-            <h2 className="mt-4 text-6xl font-bold">{progress}%</h2>
-
-            <p className="mt-4 text-gray-300">
-              {completedHabits} of {totalHabits} habits completed today.
-            </p>
-
-            <div className="mt-6 h-3 rounded-full bg-white/15">
-              <div
-                className="h-3 rounded-full bg-white transition-all"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
 
           <div>
             <h2 className="text-xl font-semibold text-gray-950">
               Today&apos;s Habits
             </h2>
 
-            {habits.length === 0 ? (
+            {isLoading ? (
+              <div className="mt-4 rounded-3xl bg-white p-8 text-center text-sm text-gray-500">
+                Loading habits...
+              </div>
+            ) : habits.length === 0 ? (
               <EmptyState onAddHabit={handleOpenAddForm} />
             ) : (
               <div className="mt-4 grid gap-4 md:grid-cols-2">
-                {habits.map((habit) => (
+                {sortedHabits.map((habit) => (
                   <HabitCard
                     key={habit.id}
                     habit={{
                       ...habit,
-                      completedToday: habit.completions?.includes(today),
+                      completedToday: (habit.completions || []).includes(today),
                       streak: calculateCurrentStreak(habit.completions || []),
                     }}
                     onToggle={handleToggleHabit}

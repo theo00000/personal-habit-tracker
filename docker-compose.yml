@@ -1,0 +1,15 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: habit-tracker-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - DATA_FILE=/app/data/habits.json
+    volumes:
+      - habit_data:/app/data
+
+volumes:
+  habit_data:
