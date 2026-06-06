@@ -218,7 +218,67 @@ Status:
 Passed
 ```
 
-### Test 6: Delete Habit
+### Test 6: Idempotent Completion Update
+
+Endpoint:
+
+```txt
+PUT /api/habits/{id}/completion
+```
+
+Request body:
+
+```json
+{
+  "date": "2026-06-06",
+  "completed": true
+}
+```
+
+Expected result:
+
+```txt
+The API marks the habit as completed for the selected date.
+Sending the same request multiple times keeps the final state completed.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 7: Idempotent Completion Removal
+
+Endpoint:
+
+```txt
+PUT /api/habits/{id}/completion
+```
+
+Request body:
+
+```json
+{
+  "date": "2026-06-06",
+  "completed": false
+}
+```
+
+Expected result:
+
+```txt
+The API removes the selected date from completions.
+Sending the same request multiple times keeps the final state not completed.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 8: Delete Habit
 
 Endpoint:
 
@@ -239,7 +299,7 @@ Status:
 Passed
 ```
 
-### Test 7: Invalid Habit Time
+### Test 9: Invalid Habit Time
 
 Endpoint:
 
@@ -365,7 +425,7 @@ Status:
 Passed
 ```
 
-### Test 5: Toggle Completion
+### Test 5: Toggle Completion with Optimistic UI
 
 Steps:
 
@@ -376,10 +436,10 @@ Steps:
 Expected result:
 
 ```txt
-Habit completion status changes.
-Daily progress percentage updates.
-Animated progress graphic updates.
-Completion status remains consistent after refreshing the page.
+Habit completion status changes immediately.
+Daily progress percentage updates immediately.
+Animated progress graphic updates smoothly.
+Backend sync completes in the background.
 ```
 
 Status:
@@ -388,7 +448,28 @@ Status:
 Passed
 ```
 
-### Test 6: Sort Habits by Time
+### Test 6: Completion Persistence
+
+Steps:
+
+```txt
+1. Complete a habit.
+2. Refresh the page.
+```
+
+Expected result:
+
+```txt
+The completed status remains consistent after the page refreshes.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 7: Sort Habits by Time
 
 Steps:
 
@@ -409,7 +490,7 @@ Status:
 Passed
 ```
 
-### Test 7: Empty State
+### Test 8: Empty State
 
 Steps:
 
@@ -429,7 +510,7 @@ Status:
 Passed
 ```
 
-### Test 8: Error State
+### Test 9: Error State
 
 Steps:
 
@@ -443,6 +524,7 @@ Expected result:
 
 ```txt
 The frontend displays an error message when the backend cannot be reached.
+If cached habits exist, the app displays saved offline data.
 ```
 
 Status:
@@ -451,7 +533,7 @@ Status:
 Passed
 ```
 
-### Test 9: Non-JSON Backend Response Handling
+### Test 10: Non-JSON Backend Response Handling
 
 Steps:
 
@@ -464,6 +546,191 @@ Expected result:
 
 ```txt
 The frontend displays a clearer error message instead of crashing on JSON.parse.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+## Offline-first Testing
+
+### Test 1: Load Cached Habits
+
+Steps:
+
+```txt
+1. Open the app while online.
+2. Let the app load habits from the backend.
+3. Stop the backend or disconnect the network.
+4. Refresh the frontend.
+```
+
+Expected result:
+
+```txt
+The app displays cached habit data from local storage.
+The app shows an offline or saved data message.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 2: Offline Completion Save
+
+Steps:
+
+```txt
+1. Open the app with existing habits loaded.
+2. Disconnect the network.
+3. Click the completion icon on a habit.
+```
+
+Expected result:
+
+```txt
+The habit completion status updates immediately.
+The progress card updates immediately.
+The app displays a message that the change was saved offline.
+The action is added to the pending sync queue.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 3: Offline Sync on Reconnect
+
+Steps:
+
+```txt
+1. Complete a habit while offline.
+2. Reconnect the network.
+```
+
+Expected result:
+
+```txt
+The pending offline action is synced automatically.
+The app updates sync status from offline to syncing, then synced.
+The backend receives the final completion state.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 4: Idempotent Retry Safety
+
+Steps:
+
+```txt
+1. Send the same completion request multiple times.
+2. Check the habit completion result.
+```
+
+Expected result:
+
+```txt
+The final completion state remains correct.
+Repeated sync attempts do not accidentally toggle the habit back.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+## Form Validation Testing
+
+### Test 1: Empty Habit Name
+
+Steps:
+
+```txt
+1. Open the Add Habit form.
+2. Leave Habit Name empty.
+3. Submit the form.
+```
+
+Expected result:
+
+```txt
+The form prevents submission and shows a validation message.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 2: Empty Category
+
+Steps:
+
+```txt
+1. Open the Add Habit form.
+2. Fill Habit Name.
+3. Leave Category empty.
+4. Submit the form.
+```
+
+Expected result:
+
+```txt
+The form prevents submission and shows a validation message.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 3: Habit Name Character Limit
+
+Steps:
+
+```txt
+1. Type a habit name longer than the allowed character limit.
+```
+
+Expected result:
+
+```txt
+The input prevents excessive text based on the maxLength rule.
+The character counter helps the user understand the limit.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 4: Category Character Limit
+
+Steps:
+
+```txt
+1. Type a category longer than the allowed character limit.
+```
+
+Expected result:
+
+```txt
+The input prevents excessive text based on the maxLength rule.
+The character counter helps the user understand the limit.
 ```
 
 Status:
@@ -671,17 +938,23 @@ Create habit API: Passed
 Update habit API: Passed
 Delete habit API: Passed
 Toggle completion API: Passed
+Idempotent completion API: Passed
 Invalid time validation: Passed
 Dashboard data loading: Passed
 Add habit: Passed
 Edit habit: Passed
 Delete habit: Passed
-Completion tracking: Passed
+Optimistic completion tracking: Passed
+Completion persistence: Passed
+Offline cached data loading: Passed
+Offline completion save: Passed
+Offline sync on reconnect: Passed
 Progress animation: Passed
 Time sorting: Passed
 Empty state: Passed
 Error state: Passed
 Non-JSON response handling: Passed
+Form validation: Passed
 Basic accessibility: Passed
 Frontend build: Passed
 Vercel environment setup: Passed
@@ -689,4 +962,4 @@ Vercel environment setup: Passed
 
 ## Notes
 
-The project is ready for portfolio submission as a full-stack mini product. It demonstrates frontend component structure, backend API implementation, Docker-based backend development, REST API integration, date-based logic, scheduled habit sorting, animated UI feedback, deployment preparation, and product documentation.
+The project is ready for portfolio submission as a full-stack mini product. It demonstrates frontend component structure, custom hook architecture, backend API implementation, Docker-based backend development, REST API integration, date-based logic, scheduled habit sorting, optimistic UI updates, offline sync handling, animated UI feedback, deployment preparation, and product documentation.
