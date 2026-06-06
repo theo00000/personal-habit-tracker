@@ -1,16 +1,16 @@
 # Personal Habit Tracker
 
-A full-stack habit tracking application that helps users build daily consistency through habit scheduling, completion tracking, progress visualization, and streak calculation.
+A full-stack habit tracking application that helps users build better daily routines by scheduling habits, tracking completion progress, and calculating streaks.
 
 ## Overview
 
-Personal Habit Tracker is a simple productivity app designed to help users organize daily habits from morning to night. Users can create habits, assign a time schedule, mark habits as completed for the current day, edit or delete habits, and monitor daily progress through a clean dashboard interface.
+Personal Habit Tracker is a simple productivity app designed to help users organize daily habits from morning to night. Users can create habits, assign a schedule time, mark habits as completed for the current day, edit or delete habits, and monitor daily progress through an animated progress dashboard.
 
-This project was built as a portfolio project to demonstrate frontend development, backend API design, RESTful communication, Docker-based local development, and product-oriented thinking.
+This project was built as a portfolio project to demonstrate frontend development, backend API design, RESTful communication, Docker-based backend development, and product-oriented thinking.
 
 ## Problem
 
-Many people want to build better routines, but they often lose consistency because they do not have a simple way to plan, track, and review their daily progress.
+Many people want to build better routines, but they often lose consistency because they do not have a simple and visual way to plan, track, and review their daily progress.
 
 A habit tracker helps users stay aware of their routine by showing what needs to be done, when it should be done, and how much progress has been completed today.
 
@@ -22,7 +22,7 @@ This application is intended for students, workers, and anyone who wants to trac
 
 Full-stack Developer.
 
-I designed and built the frontend interface, implemented habit CRUD features, created date-based completion tracking, developed a Go REST API, added JSON-based persistence, configured Docker for local backend development, and documented the project for portfolio presentation.
+I designed and built the frontend interface, implemented habit CRUD features, created date-based completion tracking, developed a Go REST API, added JSON-based persistence, configured Docker for backend development, and documented the project for portfolio presentation.
 
 ## Features
 
@@ -95,7 +95,8 @@ personal-habit-tracker/
 ├── docker-compose.yml
 ├── .env.example
 ├── package.json
-└── README.md
+├── README.md
+└── TESTING.md
 ```
 
 ## API Endpoints
@@ -117,6 +118,8 @@ Create a `.env.local` file in the root project:
 VITE_API_BASE_URL=http://localhost:8080
 VITE_APP_TIMEZONE=Asia/Jakarta
 ```
+
+The app uses `Asia/Jakarta` as the default timezone to keep frontend and backend date handling consistent.
 
 ## Running the Project
 
@@ -164,11 +167,23 @@ docker compose down -v
 docker compose up --build
 ```
 
+## Build Frontend
+
+```bash
+npm run build
+```
+
+## Design and UX Decisions
+
+The dashboard is designed with a clean and minimal layout. The animated progress card gives users a quick overview of daily completion, while the habit cards focus on the main user action: checking off habits.
+
+Habits are sorted from morning to night to match how users naturally plan their day. The checklist action is visually emphasized, while edit and delete actions are placed as secondary controls.
+
 ## Challenges
 
 The main challenge was changing the habit completion logic from a simple boolean value into a date-based completion history. This made the app more realistic because each habit stores completion dates instead of only a true or false status.
 
-Another challenge was synchronizing the frontend and backend around date and time handling. The app uses `Asia/Jakarta` as the application timezone to keep habit completion dates consistent.
+Another challenge was synchronizing frontend and backend date handling. The frontend uses browser-based date formatting while the backend runs inside Docker, so the project uses `Asia/Jakarta` as the application timezone to keep habit completion dates consistent.
 
 The project also required separating frontend state, reusable components, API service functions, backend route handling, and persistence logic to keep the codebase maintainable.
 
@@ -183,6 +198,7 @@ The project also required separating frontend state, reusable components, API se
 - Using Docker Compose for backend development
 - Sorting data based on time
 - Handling date-based completion logic
+- Improving UI hierarchy and micro-interactions
 - Creating portfolio-oriented documentation
 
 ## Accessibility Considerations
@@ -207,8 +223,4 @@ The project also required separating frontend state, reusable components, API se
 
 ## Portfolio Summary
 
-Personal Habit Tracker is a full-stack habit tracking app built with React, Go, and Docker. The app supports habit CRUD, scheduled habits, daily completion tracking, streak calculation, REST API integration, and JSON-based persistence.
-
-## Screenshot
-
-![Dashboard Screenshot](docs/screenshots/dashboard.png)
+Personal Habit Tracker is a full-stack habit tracking app built with React, Go, and Docker. The app supports habit CRUD, scheduled habits, daily completion tracking, animated progress visualization, streak calculation, REST API integration, and JSON-based persistence.
