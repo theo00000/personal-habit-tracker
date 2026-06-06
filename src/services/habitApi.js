@@ -1,15 +1,28 @@
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
 
+const parseResponseBody = (text, status) => {
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      `Backend returned non-JSON response. Status: ${status}. Response: ${text.slice(
+        0,
+        120,
+      )}`,
+    );
+  }
+};
+
 const handleResponse = async (response) => {
   const text = await response.text();
-  const data = text ? JSON.parse(text) : {};
+  const responseBody = parseResponseBody(text, response.status);
 
   if (!response.ok) {
-    throw new Error(data.error || "Something went wrong");
+    throw new Error(responseBody.error || "Something went wrong");
   }
 
-  return data;
+  return responseBody;
 };
 
 export const getHabits = async () => {
