@@ -217,17 +217,21 @@ function Dashboard() {
           />
         )}
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_2fr]">
+        <div className="mt-10 grid items-start gap-8 lg:grid-cols-[420px_1fr]">
           <ProgressCard
             progress={progress}
             completedHabits={completedHabits}
             totalHabits={totalHabits}
           />
-
           <div>
-            <h2 className="text-xl font-semibold text-gray-950">
-              Today&apos;s Habits
-            </h2>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-950">
+                Today&apos;s Habits
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Sorted from morning to night.
+              </p>
+            </div>
 
             {isLoading ? (
               <div className="mt-4 rounded-3xl bg-white p-8 text-center text-sm text-gray-500">
@@ -236,7 +240,7 @@ function Dashboard() {
             ) : habits.length === 0 ? (
               <EmptyState onAddHabit={handleOpenAddForm} />
             ) : (
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="mt-4 grid gap-4 xl:grid-cols-2">
                 {sortedHabits.map((habit) => (
                   <HabitCard
                     key={habit.id}
