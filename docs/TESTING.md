@@ -9,14 +9,15 @@ Frontend: React + Vite
 Backend: Go REST API
 Backend Runtime: Docker Compose
 Browser: Chrome / Edge
-API Base URL: http://localhost:8080
-Frontend URL: http://localhost:5173
+API Base URL Local: http://localhost:8080
+Frontend URL Local: http://localhost:5173
+Vercel Backend Route: /__/backend
 Timezone: Asia/Jakarta
 ```
 
 ## Pre-test Setup
 
-### 1. Start Backend
+### 1. Start Backend Locally
 
 ```bash
 docker compose up --build
@@ -28,7 +29,13 @@ Expected result:
 Habit Tracker API running on port 8080
 ```
 
-### 2. Start Frontend
+Status:
+
+```txt
+Passed
+```
+
+### 2. Start Frontend Locally
 
 Open a second terminal:
 
@@ -40,6 +47,12 @@ Expected result:
 
 ```txt
 Local: http://localhost:5173
+```
+
+Status:
+
+```txt
+Passed
 ```
 
 ### 3. Check Backend Health
@@ -57,6 +70,12 @@ Expected result:
   "message": "Habit Tracker API is running",
   "status": "ok"
 }
+```
+
+Status:
+
+```txt
+Passed
 ```
 
 ## API Testing
@@ -316,7 +335,7 @@ Expected result:
 ```txt
 Habit card displays the updated information.
 Updated data remains after refreshing the page.
-If the time changes, the habit position updates based on the morning-to-night sorting.
+If the time changes, the habit position updates based on morning-to-night sorting.
 ```
 
 Status:
@@ -423,7 +442,28 @@ Steps:
 Expected result:
 
 ```txt
-The frontend displays a Failed to fetch error message.
+The frontend displays an error message when the backend cannot be reached.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 9: Non-JSON Backend Response Handling
+
+Steps:
+
+```txt
+1. Access the frontend while the backend route returns a non-JSON response.
+2. Observe the displayed error message.
+```
+
+Expected result:
+
+```txt
+The frontend displays a clearer error message instead of crashing on JSON.parse.
 ```
 
 Status:
@@ -471,6 +511,22 @@ Expected result:
 ```txt
 Habit time, category, name, streak, and completion status are readable.
 The layout remains clean and understandable on desktop screen size.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 4: Dashboard Hierarchy
+
+Expected result:
+
+```txt
+The progress card gives a clear daily overview.
+The habit list remains easy to scan and interact with.
+The dashboard spacing feels balanced on desktop.
 ```
 
 Status:
@@ -537,6 +593,75 @@ Status:
 Passed
 ```
 
+## Deployment Testing
+
+### Test 1: Frontend Build
+
+Command:
+
+```bash
+npm run build
+```
+
+Expected result:
+
+```txt
+Vite builds the frontend successfully and generates the dist folder.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 2: Vercel Environment Variables
+
+Expected configuration:
+
+```env
+VITE_API_BASE_URL=/__/backend
+VITE_APP_TIMEZONE=Asia/Jakarta
+APP_TIMEZONE=Asia/Jakarta
+TZ=Asia/Jakarta
+DATA_FILE=/tmp/habits.json
+```
+
+Expected result:
+
+```txt
+The deployed frontend can call the backend route through /__/backend.
+```
+
+Status:
+
+```txt
+Passed
+```
+
+### Test 3: Vercel Backend Health Route
+
+URL pattern:
+
+```txt
+https://your-project-url.vercel.app/__/backend/health
+```
+
+Expected result:
+
+```json
+{
+  "message": "Habit Tracker API is running",
+  "status": "ok"
+}
+```
+
+Status:
+
+```txt
+Passed
+```
+
 ## Final Testing Summary
 
 ```txt
@@ -556,9 +681,12 @@ Progress animation: Passed
 Time sorting: Passed
 Empty state: Passed
 Error state: Passed
+Non-JSON response handling: Passed
 Basic accessibility: Passed
+Frontend build: Passed
+Vercel environment setup: Passed
 ```
 
 ## Notes
 
-The project is ready for portfolio submission as a full-stack mini product. It demonstrates frontend component structure, backend API implementation, Docker-based backend development, REST API integration, date-based logic, scheduled habit sorting, animated UI feedback, and product documentation.
+The project is ready for portfolio submission as a full-stack mini product. It demonstrates frontend component structure, backend API implementation, Docker-based backend development, REST API integration, date-based logic, scheduled habit sorting, animated UI feedback, deployment preparation, and product documentation.
