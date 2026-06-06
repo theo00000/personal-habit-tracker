@@ -60,7 +60,7 @@ I designed and built the frontend interface, implemented habit CRUD features, cr
 
 ## Screenshot
 
-![Dashboard Screenshot](docs/screenshots/dashboard.png)
+![Dashboard Screenshot](docs/screenshots/dashboard-personal-habit-tracker.png)
 
 ### Development and Deployment
 
