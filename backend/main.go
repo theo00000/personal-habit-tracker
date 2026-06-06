@@ -152,10 +152,10 @@ func (s *Store) createHabit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now := time.Now().Format(time.RFC3339)
+	now := appNow().Format(time.RFC3339)
 
 	newHabit := Habit{
-		ID:          time.Now().UnixMilli(),
+		ID:          appNow().UnixMilli(),
 		Name:        name,
 		Category:    category,
 		Time:        habitTime,
@@ -211,7 +211,7 @@ func (s *Store) updateHabit(w http.ResponseWriter, r *http.Request, id int64) {
 			s.habits[index].Name = name
 			s.habits[index].Category = category
 			s.habits[index].Time = habitTime
-			s.habits[index].UpdatedAt = time.Now().Format(time.RFC3339)
+			s.habits[index].UpdatedAt = appNow().Format(time.RFC3339)
 
 			if err := s.SaveLocked(); err != nil {
 				writeError(w, http.StatusInternalServerError, "failed to save habit")
@@ -257,7 +257,7 @@ func (s *Store) toggleHabit(w http.ResponseWriter, r *http.Request, id int64) {
 	date := strings.TrimSpace(input.Date)
 
 	if date == "" {
-		date = time.Now().Format("2006-01-02")
+		date = appNow().Format("2006-01-02")
 	}
 
 	if !isValidDate(date) {
@@ -281,7 +281,7 @@ func (s *Store) toggleHabit(w http.ResponseWriter, r *http.Request, id int64) {
 			}
 
 			s.habits[habitIndex].Completions = completions
-			s.habits[habitIndex].UpdatedAt = time.Now().Format(time.RFC3339)
+			s.habits[habitIndex].UpdatedAt = appNow().Format(time.RFC3339)
 
 			if err := s.SaveLocked(); err != nil {
 				writeError(w, http.StatusInternalServerError, "failed to save habit")
@@ -347,7 +347,7 @@ func (s *Store) SaveLocked() error {
 }
 
 func seedHabits() []Habit {
-	now := time.Now()
+	now := appNow()
 	today := now.Format("2006-01-02")
 	yesterday := now.AddDate(0, 0, -1).Format("2006-01-02")
 	twoDaysAgo := now.AddDate(0, 0, -2).Format("2006-01-02")
@@ -484,4 +484,15 @@ func getEnv(key string, fallback string) string {
 	}
 
 	return value
+}
+
+func appNow() time.Time {
+	locationName := getEnv("APP_TIMEZONE", "Asia/Jakarta")
+
+	location, err := time.LoadLocation(locationName)
+	if err != nil {
+		return time.Now()
+	}
+
+	return time.Now().In(location)
 }

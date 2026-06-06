@@ -8,6 +8,8 @@ services:
     environment:
       - PORT=8080
       - DATA_FILE=/app/data/habits.json
+      - APP_TIMEZONE=Asia/Jakarta
+      - TZ=Asia/Jakarta
     volumes:
       - habit_data:/app/data
 
