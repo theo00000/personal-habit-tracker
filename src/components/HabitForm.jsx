@@ -1,8 +1,11 @@
+import { HABIT_LIMITS } from "../utils/habitValidation";
+
 function HabitForm({
   isEditing,
   habitName,
   habitCategory,
   habitTime,
+  formError,
   onNameChange,
   onCategoryChange,
   onTimeChange,
@@ -18,6 +21,12 @@ function HabitForm({
         {isEditing ? "Edit Habit" : "Add New Habit"}
       </h2>
 
+      {formError && (
+        <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+          {formError}
+        </div>
+      )}
+
       <div className="mt-5 grid gap-4 md:grid-cols-3">
         <div>
           <label
@@ -31,11 +40,16 @@ function HabitForm({
             id="habit-name"
             type="text"
             value={habitName}
+            maxLength={HABIT_LIMITS.nameMaxLength}
             onChange={(event) => onNameChange(event.target.value)}
             placeholder="Example: Read 10 pages"
             className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-gray-950"
             required
           />
+
+          <p className="mt-2 text-xs text-gray-400">
+            {habitName.length}/{HABIT_LIMITS.nameMaxLength}
+          </p>
         </div>
 
         <div>
@@ -50,11 +64,16 @@ function HabitForm({
             id="habit-category"
             type="text"
             value={habitCategory}
+            maxLength={HABIT_LIMITS.categoryMaxLength}
             onChange={(event) => onCategoryChange(event.target.value)}
             placeholder="Example: Learning"
             className="mt-2 w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-gray-950"
             required
           />
+
+          <p className="mt-2 text-xs text-gray-400">
+            {habitCategory.length}/{HABIT_LIMITS.categoryMaxLength}
+          </p>
         </div>
 
         <div>

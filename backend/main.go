@@ -34,6 +34,11 @@ type ToggleInput struct {
 	Date string `json:"date"`
 }
 
+type CompletionInput struct {
+	Date      string `json:"date"`
+	Completed bool   `json:"completed"`
+}
+
 type Store struct {
 	mu       sync.Mutex
 	filePath string
@@ -99,6 +104,16 @@ func (s *Store) habitByIDHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		s.toggleHabit(w, r, id)
+		return
+	}
+
+	if action == "completion" {
+		if r.Method != http.MethodPut {
+			writeError(w, http.StatusMethodNotAllowed, "method not allowed")
+			return
+		}
+
+		s.setHabitCompletion(w, r, id)
 		return
 	}
 
@@ -296,6 +311,58 @@ func (s *Store) toggleHabit(w http.ResponseWriter, r *http.Request, id int64) {
 	writeError(w, http.StatusNotFound, "habit not found")
 }
 
+func (s *Store) setHabitCompletion(w http.ResponseWriter, r *http.Request, id int64) {
+	var input CompletionInput
+
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	date := strings.TrimSpace(input.Date)
+
+	if date == "" {
+		date = appNow().Format("2006-01-02")
+	}
+
+	if !isValidDate(date) {
+		writeError(w, http.StatusBadRequest, "date must use YYYY-MM-DD format")
+		return
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	for habitIndex, habit := range s.habits {
+		if habit.ID == id {
+			completions := habit.Completions
+			isCompleted := containsDate(completions, date)
+
+			if input.Completed && !isCompleted {
+				completions = append(completions, date)
+				sort.Strings(completions)
+			}
+
+			if !input.Completed && isCompleted {
+				completions = removeDate(completions, date)
+			}
+
+			s.habits[habitIndex].Completions = completions
+			s.habits[habitIndex].UpdatedAt = appNow().Format(time.RFC3339)
+
+			if err := s.SaveLocked(); err != nil {
+				writeError(w, http.StatusInternalServerError, "failed to save habit")
+				return
+			}
+
+			writeJSON(w, http.StatusOK, s.habits[habitIndex])
+			return
+		}
+	}
+
+	writeError(w, http.StatusNotFound, "habit not found")
+}
+
 func (s *Store) Load() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -446,6 +513,17 @@ func normalizeHabitTime(value string) string {
 	return value
 }
 
+func appNow() time.Time {
+	locationName := getEnv("APP_TIMEZONE", "Asia/Jakarta")
+
+	location, err := time.LoadLocation(locationName)
+	if err != nil {
+		return time.Now()
+	}
+
+	return time.Now().In(location)
+}
+
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -484,15 +562,4 @@ func getEnv(key string, fallback string) string {
 	}
 
 	return value
-}
-
-func appNow() time.Time {
-	locationName := getEnv("APP_TIMEZONE", "Asia/Jakarta")
-
-	location, err := time.LoadLocation(locationName)
-	if err != nil {
-		return time.Now()
-	}
-
-	return time.Now().In(location)
 }

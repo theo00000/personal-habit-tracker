@@ -21,7 +21,7 @@ function ProgressCard({ progress, completedHabits, totalHabits }) {
       : "Keep going. Small progress still builds momentum.";
 
   return (
-    <aside className="relative overflow-hidden rounded-[2rem] bg-gray-950 p-7 text-white shadow-sm">
+    <aside className="relative overflow-hidden rounded-4xl bg-gray-950 p-7 text-white shadow-sm">
       <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
       <div className="absolute -bottom-16 left-6 h-36 w-36 rounded-full bg-blue-500/10 blur-3xl" />
 

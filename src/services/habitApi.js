@@ -25,8 +25,11 @@ const handleResponse = async (response) => {
   return responseBody;
 };
 
-export const getHabits = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/habits`);
+export const getHabits = async ({ signal } = {}) => {
+  const response = await fetch(`${API_BASE_URL}/api/habits`, {
+    signal,
+  });
+
   return handleResponse(response);
 };
 
@@ -70,6 +73,21 @@ export const toggleHabit = async (habitId, date) => {
     },
     body: JSON.stringify({ date }),
   });
+
+  return handleResponse(response);
+};
+
+export const setHabitCompletion = async (habitId, { date, completed }) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/habits/${habitId}/completion`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ date, completed }),
+    },
+  );
 
   return handleResponse(response);
 };
